@@ -1660,7 +1660,6 @@ function buildHornSpeakerAcoustics(inputNode, outputNode) {
 }
 
 function buildHeavyMechanicalLowAcoustics(inputNode, outputNode) {
-  /* 手控电笛：保留机械低频底子，但去掉"闷"，让 400-1350Hz 主音与谐波透出来 */
   const midBoost = ctx.createBiquadFilter();
   midBoost.type = "peaking";
   midBoost.frequency.value = 700;
@@ -2504,7 +2503,6 @@ constructor(tag, targetF, lowestF, riseTC, riseRepressTC, coastTC, busGetter, ba
       rampSec = this.riseRepressTC;
     }
     if (isHowlerArmed) {
-      /* 低音脉冲跟着电笛音高一起爬升，不再用固定 clearing 循环 */
       if (!manualRumblerVoiceObj) startManualDefenseRumbler(fromF, this.targetF, rampSec);
       else slideManualDefenseRumbler(fromF, this.targetF, rampSec);
     }
@@ -2519,7 +2517,6 @@ constructor(tag, targetF, lowestF, riseTC, riseRepressTC, coastTC, busGetter, ba
     const now = ctx.currentTime;
 
     if (this.tag === "high") {
-      /* 断调防空：松开立即置零，低音同步瞬断 */
       this.stop();
       if (currentMode && ctx) {
         if (!isMicActive && !isPaPlaybackPending) {
@@ -2539,7 +2536,6 @@ constructor(tag, targetF, lowestF, riseTC, riseRepressTC, coastTC, busGetter, ba
     this.voice.osc.frequency.setValueAtTime(curF, now);
     this.voice.osc.frequency.linearRampToValueAtTime(this.lowestF, now + coastTime);
 
-    /* 低音脉冲跟着音调一起滑落，同步渐弱 */
     if (manualRumblerVoiceObj) {
       const bv = manualRumblerVoiceObj;
       try {
@@ -2573,7 +2569,6 @@ constructor(tag, targetF, lowestF, riseTC, riseRepressTC, coastTC, busGetter, ba
     if (this.timer) { clearTimeout(this.timer); this.timer = null; }
     if (this.voice) { this.voice.stop(); this.voice = null; }
     this.state = "idle";
-    /* 两个防空都松开了才关低音，避免一个停放把另一个的低音带走 */
     const other = (this === manualHighCtrl) ? manualLowCtrl : manualHighCtrl;
     if (!other || other.state === "idle") {
       stopManualDefenseRumbler(this.tag === "high" ? 0.04 : 0.06);
